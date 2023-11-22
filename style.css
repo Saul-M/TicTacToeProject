@@ -1,0 +1,51 @@
+.game{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+.title {
+    margin-bottom: 0;
+    border: 1px solid #000;
+    width: 300px;
+    margin: auto;
+    box-shadow: 10px 5px 0 #000;
+}
+.status{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 50px;
+    width: 200px;
+    margin: auto;
+    text-align: left;
+    margin-bottom: 15px;
+    
+    padding-left: 5px;
+
+}
+.createdBy {
+    margin-top: 250px;
+    /*outline: 1px solid #000;*/
+    height: 100%;
+}
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 300px;
+    margin: auto;
+}
+.cell {
+    width: 100px;
+    height: 100px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    cursor: pointer;
+}
+.cell:nth-child(odd) {
+    background-color: rgb(133, 141, 149);
+  }

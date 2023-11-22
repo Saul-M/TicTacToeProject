@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game">
+        <h1 class="title">Tic-Tac-Toe Game</h1>
+        
+
+        <div class="status">
+            <h3>>Status: </h3>
+            <div id="gameStatus"></div>
+        </div>
+        
+        <div class="board">
+            <div id="cell1" class="cell" onclick="placeMark(1)"></div>
+            <div id="cell2" class="cell" onclick="placeMark(2)"></div>
+            <div id="cell3" class="cell" onclick="placeMark(3)"></div>
+            <div id="cell4" class="cell" onclick="placeMark(4)"></div>
+            <div id="cell5" class="cell" onclick="placeMark(5)"></div>
+            <div id="cell6" class="cell" onclick="placeMark(6)"></div>
+            <div id="cell7" class="cell" onclick="placeMark(7)"></div>
+            <div id="cell8" class="cell" onclick="placeMark(8)"></div>
+            <div id="cell9" class="cell" onclick="placeMark(9)"></div>
+        </div>
+        <h3 class="createdBy">Created by: Juan | Bernando | Saul</h3>
+    </div>
+
+
+    <script>
+        // This is the client side of the game
+        // Like who is current playing 
+        const gameStatus = document.getElementById('gameStatus');
+        // This is the board
+        const cells = document.querySelectorAll('.cell');
+        let player = null;
+
+        // REPLACE THE ws://##### WITH IP ADDRESS FROM THE MACHINE THE SERVER
+        // IS RUNNING FROM
+        const socket = new WebSocket('ws://67.187.176.118:8765');
+
+        socket.addEventListener('open', function (event) {
+            gameStatus.textContent = 'Connected to the WebSocket server';
+            socket.send(JSON.stringify({type:'beginMatch'}))
+        });
+
+        /* So something worth noting was that the client needed a way to block the player to make moves when it isnt their turn 
+            therfore 2 functions were made, enableBoard(), disableBoard() */
+        socket.addEventListener('message', function (event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'player') {
+                player = data.player;
+                gameStatus.textContent =  `${player}`;
+            } else if (data.type === 'state') {
+                updateBoard(data.state);
+                // Enable or disable the board based on currentPlayer
+                if ((data.state.currentPlayer === 'X' && player === 'p1') || 
+                    (data.state.currentPlayer === 'O' && player === 'p2')) {
+                    // It's this client's turn
+                    enableBoard();
+                } else {
+                    // It's not this client's turn
+                    disableBoard();
+                }
+            } else if (data.type === 'win') {
+                alert(`Player ${data.player} won!`);
+                // Disable the board after win
+                disableBoard();
+                // Optionally reset the game here
+            } else if (data.type === 'error') {
+                alert(data.message);
+            }
+        });
+
+        function enableBoard() {
+            cells.forEach(cell => {
+                cell.style.pointerEvents = 'auto'; // Enable clicking
+            });
+        }
+
+        function disableBoard() {
+            cells.forEach(cell => {
+                cell.style.pointerEvents = 'none'; // Disable clicking
+            });
+        }
+
+
+
+        // this is the function that sends the data to the server
+        // Data being the block being clicked 
+        // we dont need to send the player because the server already knows who the player is 
+        function placeMark(cellId) {
+            if (player) {
+                socket.send(JSON.stringify({ cellId: cellId })); 
+            }
+        }
+
+        function updateBoard(state) {
+            // Clear all cells
+            cells.forEach(cell => cell.textContent = '');
+            // Place the marks for player1
+            state.p1Moves.forEach(spot => {
+                document.getElementById('cell' + spot).textContent = 'X';
+            });
+            // Place the marks for player2
+            state.p2Moves.forEach(spot => {
+                document.getElementById('cell' + spot).textContent = 'O';
+            });
+            // Update the current player status
+            gameStatus.textContent = `Current player: ${state.currentPlayer}`;
+        }
+    </script>
+</body>
+</html>
